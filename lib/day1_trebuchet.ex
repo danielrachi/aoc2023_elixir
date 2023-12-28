@@ -6,7 +6,7 @@ defmodule Day1Trebuchet do
   """
 
   @doc """
-  Read puzzle input values.
+  Parse file path into list with each line being an element.
   """
   def parse_input(path) do
     {:ok, input} = File.read(path)
