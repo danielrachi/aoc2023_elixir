@@ -8,7 +8,14 @@ defmodule Day2CubeConundrum do
   def part1(input_file_path) do
     Day1Trebuchet.parse_input(input_file_path)
     |> Enum.map(&parse_game/1)
-    |> Enum.map(&process_game/1)
+    |> Enum.map(&process_game_part_1/1)
+    |> Enum.sum()
+  end
+
+  def part2(input_file_path) do
+    Day1Trebuchet.parse_input(input_file_path)
+    |> Enum.map(&parse_game/1)
+    |> Enum.map(&process_game_part_2/1)
     |> Enum.sum()
   end
 
@@ -34,7 +41,7 @@ defmodule Day2CubeConundrum do
     [game_id, sets]
   end
 
-  def process_game(parsed_game) do
+  def process_game_part_1(parsed_game) do
     [game_id, sets] = parsed_game
     if valid_sets?(sets) do
       game_id
@@ -53,5 +60,22 @@ defmodule Day2CubeConundrum do
         end
       end)
     end)
+  end
+
+  def process_game_part_2(parsed_game) do
+    [_, sets] = parsed_game
+
+    {minimun_red, minimun_green, minimun_blue} =
+      Enum.reduce(sets, {0, 0, 0}, fn set, {red, green, blue} ->
+        Enum.reduce(set, {red, green, blue}, fn [number, color], {acc_red, acc_green, acc_blue} ->
+          case color do
+            :red -> {max(acc_red, number), acc_green, acc_blue}
+            :green -> {acc_red, max(acc_green, number), acc_blue}
+            :blue -> {acc_red, acc_green, max(acc_blue, number)}
+          end
+        end)
+      end)
+
+    minimun_red * minimun_green * minimun_blue
   end
 end
