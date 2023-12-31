@@ -1,0 +1,72 @@
+defmodule Day3GearRatios do
+  def part1(input_file) do
+    Day1Trebuchet.parse_input(input_file)
+    |> Enum.map(&String.to_charlist/1)
+    |> Enum.with_index
+    |> Enum.reduce({[],[], 0}, &get_coordinates_in_row/2)
+    |> Tuple.delete_at(2)
+    |> adjust_column_coordinates_for_length()
+  end
+
+  # has to return the updated {num_coord, sym_coord} lists with the coords of all nums and syms
+  # found in the row.
+  def get_coordinates_in_row({num_coords, sym_coords}, {row, row_index, column_index}) do
+    if Enum.find_index(row, &(&1 != ?.)) == nil do
+      {num_coords, sym_coords, 0}
+    else 
+      {coords, updated_row, used_column_index} = 
+        take_out_next_relevant_char({num_coords, sym_coords}, {row, row_index, column_index})
+      get_coordinates_in_row(coords, {updated_row, row_index, column_index + used_column_index})
+    end 
+  end
+
+  def take_out_next_relevant_char({num_coords, sym_coords}, {row, row_index, column_index}) do
+    trim_index = Enum.find_index(row, &(&1 != ?.))
+    trimmed_row = safe_drop(row, trim_index)
+    {updated_coords, updated_row} = 
+      process_relevant_char(trimmed_row, {num_coords, sym_coords}, {row_index, trim_index, column_index})
+    {updated_coords, updated_row, trim_index}
+  end
+
+  def safe_drop(list, index) do
+    if index == nil do
+      []
+    else
+      Enum.drop(list, index)
+    end
+  end
+
+  def process_relevant_char(
+      [relevant_char | rest], {num_coords, sym_coords}, {row_index, trim_index, column_index}
+    ) do
+    if relevant_char in ?0..?9 do
+      {trimmed_row, number} = take_number_and_trim([relevant_char | rest], [])
+      updated_num_coords = 
+        num_coords ++
+          [{number, {row_index, trim_index + column_index}}]
+      {{updated_num_coords, sym_coords}, trimmed_row}
+    else
+      symbol = List.to_atom([relevant_char])
+      updated_sym_coords = sym_coords ++ [{symbol, {row_index, trim_index + column_index}}]
+      {{num_coords, updated_sym_coords}, rest}
+    end
+  end
+
+  def take_number_and_trim([actual_digit | rest], num_list) do
+    if actual_digit in ?0..?9  do
+      {next_row, processed_char} = take_number_and_trim(rest, num_list ++ [actual_digit])
+    else
+      num = num_list |> List.to_integer
+      {[actual_digit | rest], num}
+    end
+  end
+
+  def adjust_column_coordinates_for_length({num_coords, sym_coords}) do
+    Enum.map_reduce(num_coords, 0, fn item, prev_offset -> 
+      adjusteed_value = (item |> elem(1) |> elem(1)) + prev_offset
+      put_elem(item, 1, {item |> elem(1) |> elem(0), adjusteed_value})
+      char  = elem(item, 0)
+      Integer.digits(char) |> Enum.count()
+    end)
+  end
+end

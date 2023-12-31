@@ -1,0 +1,16 @@
+defmodule Day3GearRatios do
+  def part1(input_file_path) do
+    Day1Trebuchet.parse_input(input_file_path)
+    |> Enum.map(&String.to_charlist(&1))
+    |> Enum.with_index()
+    |> Enum.flat_map(&get_coordinates/1)
+  end
+
+  def get_coordinates({row, row_index}) do
+    first_non_dot_index = Enum.find_index(row, &(&1 != ?.))
+    # {
+    #   [{242, {0, 1}}],
+    #   [{:%, {1, 13}]
+    # }
+  end
+end

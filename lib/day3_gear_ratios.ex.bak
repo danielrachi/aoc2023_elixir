@@ -1,0 +1,56 @@
+defmodule Day3GearRatios do
+  def part1(input_file_path) do
+    Day1Trebuchet.parse_input(input_file_path)
+    |> Enum.with_index()
+    |> Enum.map(&get_coordinates/2)
+  end
+
+  # {
+  #   [{242, {0, 1}}],
+  #   [{:%, {1, 13}}]
+  # }
+  def get_coordinates(coordinates, {[], _}), do: coordinates
+  def get_coordinates({number_coordinates, symbol_coordinates}, {row, row_index}) do
+    IO.inspect(row, label: "row")
+    first_non_dot_index = Enum.find_index(row, &(&1 != ?.))
+    |> IO.inspect(label: "nd index")
+    if first_non_dot_index == nil do
+      get_coordinates({number_coordinates, symbol_coordinates}, {[], row_index})
+    end
+    trimmed_row = Enum.drop(row, first_non_dot_index)
+    |> IO.inspect(label: "trimmed row")
+    if Enum.at(row, first_non_dot_index) in ?0..?9 do
+      number = 
+        trimmed_row
+        |> take_number([])
+      int_size = number |> Integer.digits() |> Enum.count()
+      new_row = Enum.drop(row, int_size)
+      get_coordinates(
+        {
+          [{number, {row_index, first_non_dot_index}} | number_coordinates],
+          symbol_coordinates
+        },
+        {new_row, row_index}
+      )
+    else
+      symbol = [hd(trimmed_row)] |> List.to_atom()
+      new_row = Enum.drop(row, 1)
+      get_coordinates(
+        {
+          number_coordinates,
+          [{symbol, {row_index, first_non_dot_index}} | symbol_coordinates]
+        },
+        {new_row, row_index}
+      )
+    end
+  end
+
+  def take_number([actual_digit | _], number) when actual_digit not in ?0..?9 do
+    number
+    |> Enum.reverse()
+    |> List.to_integer()
+  end
+  def take_number([actual_digit | rest], number) when actual_digit in ?0..?9 do
+    take_number(rest, [actual_digit | number])
+  end
+end  
