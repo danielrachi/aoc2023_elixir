@@ -1,4 +1,7 @@
 defmodule Day4Scratchcards do
+  @moduledoc """
+  This solution works but is VERY slow. It would take more than 8 hours to return.
+  """
   def part1(input_file) do
     Day1Trebuchet.parse_input(input_file)
     |> Enum.map(&parse_line(&1, :part1))
