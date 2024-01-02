@@ -1,0 +1,69 @@
+defmodule Day4Scratchcards do
+  def part1(input_file) do
+    Day1Trebuchet.parse_input(input_file)
+    |> Enum.map(&parse_line(&1, :part1))
+    |> Enum.map(&get_card_points/1)
+    |> Enum.sum()
+  end
+
+  def part2(input_file) do
+    deck = Day1Trebuchet.parse_input(input_file)
+    |> Enum.map(&parse_line(&1, :part2))
+    get_new_deck(deck, 0, Enum.count(deck))
+    |> Enum.count()
+  end
+
+  def parse_line(line, :part1) do
+    line
+    |> String.replace(~r/Card\s+\d+:/, "")
+    |> String.split("|")
+    |> Enum.map(&Regex.scan(~r/\d+/, &1) |> List.flatten())
+  end
+  def parse_line(line, :part2) do
+    line
+    |> String.replace(~r/Card\s+/, "")
+    |> String.split(~r/[:||\|]/)
+    |> Enum.map(&Regex.scan(~r/\d+/, &1) |> List.flatten())
+  end
+
+  def get_card_points([winners, owned]) do
+    for w <- winners, o <- owned, w == o, reduce: 0 do
+      acc -> if(acc == 0, do: acc + 1, else: acc * 2)
+    end
+  end
+
+  def get_new_deck(deck, index, up_bound) when index == up_bound, do: deck
+  def get_new_deck(deck, index, _up_bound) do
+    updated_deck = update_deck(deck, Enum.at(deck, index))
+    get_new_deck(updated_deck, index + 1, Enum.count(updated_deck))
+  end
+
+  def update_deck(cards, card) do
+    add_copies(cards, get_cards_to_copy(card))
+  end
+
+  def get_cards_to_copy([[card_number], winners, owned]) do
+    number_of_matching_numbers = 
+      Enum.count(winners, fn w -> w in owned end)
+    if number_of_matching_numbers == 0 do
+      []
+    else
+      Enum.to_list(1..number_of_matching_numbers)
+      |> Enum.map(&(&1 + String.to_integer(card_number)))
+    end
+  end
+
+  def add_copies(cards, []), do: cards
+  def add_copies(cards, card_numbers) do
+    copy_card(cards, hd(card_numbers))
+    |> add_copies(tl(card_numbers))
+  end
+
+  def copy_card(cards, card_number) do
+    index = Enum.find_index(cards, fn card ->
+      card_number == card |> hd() |> hd() |> String.to_integer()
+    end)
+    card = Enum.at(cards, index)
+    List.insert_at(cards, index + 1, card)
+  end
+end
