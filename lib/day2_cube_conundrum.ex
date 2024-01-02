@@ -21,28 +21,31 @@ defmodule Day2CubeConundrum do
 
   def parse_game(game) do
     [game_id_full, sets_full] = String.split(game, ":", trim: true)
-    game_id = 
+
+    game_id =
       game_id_full
       |> String.split(" ", trim: true)
       |> List.last()
       |> Integer.parse()
       |> elem(0)
-    sets = 
+
+    sets =
       sets_full
       |> String.split(";", trim: true)
       |> Enum.map(&String.split(&1, ",", trim: true))
-      |> Enum.map(
-      fn inner_list -> 
-        Enum.map(inner_list, fn element -> 
+      |> Enum.map(fn inner_list ->
+        Enum.map(inner_list, fn element ->
           [number_str, color_str] = String.split(element, " ", trim: true)
           [String.to_integer(number_str), String.to_atom(color_str)]
         end)
       end)
+
     [game_id, sets]
   end
 
   def process_game_part_1(parsed_game) do
     [game_id, sets] = parsed_game
+
     if valid_sets?(sets) do
       game_id
     else
@@ -51,12 +54,12 @@ defmodule Day2CubeConundrum do
   end
 
   def valid_sets?(sets) do
-    Enum.all?(sets, fn set -> 
-      Enum.all?(set, fn [number, color] -> 
+    Enum.all?(sets, fn set ->
+      Enum.all?(set, fn [number, color] ->
         case color do
-         :red -> number <= Map.get(@bag_contents, :red)
-         :green -> number <= Map.get(@bag_contents, :green)
-         :blue -> number <= Map.get(@bag_contents, :blue)
+          :red -> number <= Map.get(@bag_contents, :red)
+          :green -> number <= Map.get(@bag_contents, :green)
+          :blue -> number <= Map.get(@bag_contents, :blue)
         end
       end)
     end)

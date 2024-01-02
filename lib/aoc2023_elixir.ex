@@ -17,6 +17,5 @@ defmodule Aoc2023Elixir do
   end
 
   def sup do
-    
   end
 end
